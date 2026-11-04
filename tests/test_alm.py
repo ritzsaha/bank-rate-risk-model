@@ -1,6 +1,6 @@
 import pytest
 from src.alm import (load_balance_sheet, interest_income, interest_expense,
-                     nii, nim, delta_nii)
+                     nii, nim, delta_nii, delta_eve, equity)
 
 @pytest.fixture
 def bs():
@@ -38,3 +38,21 @@ def test_beta_matters(bs):
     bs2 = bs.copy()
     bs2["beta"] = 1.0
     assert delta_nii(bs2, 1) == pytest.approx(-0.3015, abs=1e-4)
+
+def test_delta_eve_positive(bs):
+    assert delta_eve(bs, 1) == pytest.approx(-1.2225, abs=1e-4)
+
+def test_delta_eve_negative(bs):
+    assert delta_eve(bs, -1) == pytest.approx(1.2225, abs=1e-4)
+
+def test_equity(bs):
+    assert equity(bs) == 8
+
+def test_delta_eve_zero(bs):
+    assert delta_eve(bs, 0) == pytest.approx(0.0, abs=1e-4)
+
+def test_delta_eve_linear(bs):
+    assert delta_eve(bs, 2) == pytest.approx(2 * delta_eve(bs, 1), abs=1e-4)
+
+def test_delta_eve_as_pp_equity(bs):
+    assert delta_eve(bs, 1) / equity(bs) * 100 == pytest.approx(-15.28, abs=0.01)
