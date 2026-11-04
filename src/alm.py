@@ -1,5 +1,6 @@
 import pandas as pd
 from pathlib import Path
+import numpy as np
 
 def load_balance_sheet(path=None):
     if path is None:
@@ -42,3 +43,31 @@ def equity(bs):
     total_assets = bs.loc[bs["side"] == "Asset", "balance"].sum()
     total_liabs = bs.loc[bs["side"] == "Liability", "balance"].sum()
     return total_assets - total_liabs
+
+KEYS = [2, 3, 5, 7, 10]
+
+def key_rate_weights(duration, keys=KEYS):
+    """Spread one duration over the key maturities (weights sum to 1)."""
+    w = pd.Series(0.0, index=keys)
+    if duration <= keys[0]:
+        w[keys[0]] = 1.0
+    elif duration >= keys[-1]:
+        w[keys[-1]] = 1.0
+    else:
+        for lo, hi in zip(keys[:-1], keys[1:]):
+            if lo <= duration < hi:
+                w_hi = (duration - lo) / (hi - lo)        # how far the duration is from lo toward hi
+                w[lo], w[hi] = 1 - w_hi, w_hi
+    return w
+
+def key_rate_exposure(bs, keys=KEYS):
+    """Net exposure (assets minus liabilities) at each key, in $B x years."""
+    total = pd.Series(0.0, index=keys)
+    for bs["duration"], row in bs.iterrows():
+        sign = 1 if row["side"] == "Asset" else -1                # +1 for an asset, -1 for a liability
+        total += sign * row["balance"] * row["duration"] * key_rate_weights(row["duration"], keys=KEYS)
+    return total
+
+def delta_eve_curve(bs, shocks, keys=KEYS):
+    """shocks: a Series indexed by key, in percentage points."""
+    return -(key_rate_exposure(bs, keys=KEYS) * shocks / 100).sum()
