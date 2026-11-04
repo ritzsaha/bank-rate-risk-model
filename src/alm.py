@@ -30,3 +30,15 @@ def delta_nii(bs, shock_pp):
     asset_gain = ((assets["balance"] * assets["reprice_share"]).sum() / 100) * shock_pp/100      # sum of balance x reprice_share/100, times shock/100
     liability_cost = ((liabs["balance"] * liabs["reprice_share"] * liabs["beta"]).sum() / 100) * shock_pp/100  
     return asset_gain - liability_cost
+
+def delta_eve(bs, shock_pp):
+    assets = bs[bs["side"] == "Asset"]
+    liabs = bs[bs["side"] == "Liability"]
+    asset_exposure = (assets["balance"] * assets["duration"]).sum()
+    liability_exposure = (liabs["balance"] * liabs["duration"]).sum()
+    return -(asset_exposure - liability_exposure) * shock_pp / 100
+
+def equity(bs):
+    total_assets = bs.loc[bs["side"] == "Asset", "balance"].sum()
+    total_liabs = bs.loc[bs["side"] == "Liability", "balance"].sum()
+    return total_assets - total_liabs
