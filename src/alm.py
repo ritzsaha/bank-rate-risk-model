@@ -88,3 +88,16 @@ def historical_shock(yields, start, end, cols=("2yr","3yr","5yr","7yr","10yr"), 
     """Actual yield change between two dates, one value per key."""
     change = yields.loc[end, cols] - yields.loc[start, cols]
     return pd.Series(change.values, index=keys)
+
+def delta_nii_curve(bs, shocks):
+    """12-month change in NII when each key rate moves by its own shock (pp)."""
+    assets = bs[bs["side"] == "Asset"]
+    liabs = bs[bs["side"] == "Liability"]
+
+    asset_shock = assets["reprice_key"].map(shocks)
+    liab_shock = liabs["reprice_key"].map(shocks)
+
+    asset_gain = (assets["balance"] * assets["reprice_share"] / 100 * asset_shock / 100).sum()
+    liab_cost = (liabs["balance"] * liabs["reprice_share"] / 100
+                 * liabs["beta"] * liab_shock / 100).sum()
+    return asset_gain - liab_cost
