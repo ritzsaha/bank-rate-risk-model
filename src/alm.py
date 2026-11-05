@@ -5,10 +5,17 @@ import numpy as np
 def load_balance_sheet(path=None):
     if path is None:
         path = Path(__file__).resolve().parent.parent / "model" / "balance_sheet.csv"
+
+    print("Reading file:", path.resolve())
+
     return pd.read_csv(path)
 
-def load_balance_sheet(path="model/balance_sheet.csv"):
-    return pd.read_csv(path)
+def load_yields(path=None):
+    if path is None:
+        path = Path(__file__).resolve().parent.parent / "data" / "yields.csv"
+
+    df = pd.read_csv(path, parse_dates=["date"], index_col="date")
+    return df.sort_index()
 
 def interest_income(bs):
     assets = bs[bs["side"] == "Asset"]
@@ -63,11 +70,21 @@ def key_rate_weights(duration, keys=KEYS):
 def key_rate_exposure(bs, keys=KEYS):
     """Net exposure (assets minus liabilities) at each key, in $B x years."""
     total = pd.Series(0.0, index=keys)
-    for bs["duration"], row in bs.iterrows():
+    for _, row in bs.iterrows():
         sign = 1 if row["side"] == "Asset" else -1                # +1 for an asset, -1 for a liability
-        total += sign * row["balance"] * row["duration"] * key_rate_weights(row["duration"], keys=KEYS)
+        total += sign * row["balance"] * row["duration"] * key_rate_weights(row["duration"], keys=keys)
     return total
 
 def delta_eve_curve(bs, shocks, keys=KEYS):
     """shocks: a Series indexed by key, in percentage points."""
-    return -(key_rate_exposure(bs, keys=KEYS) * shocks / 100).sum()
+    return -(key_rate_exposure(bs, keys=keys) * shocks / 100).sum()
+
+def tilt(keys, pivot, slope, parallel=0.0):
+    """Shock at each key: parallel + slope x (key - pivot), in percentage points."""
+    return pd.Series([parallel + slope * (k - pivot) for k in keys], 
+                     index=keys)
+
+def historical_shock(yields, start, end, cols=("2yr","3yr","5yr","7yr","10yr"), keys=KEYS):
+    """Actual yield change between two dates, one value per key."""
+    change = yields.loc[end, cols] - yields.loc[start, cols]
+    return pd.Series(change.values, index=keys)

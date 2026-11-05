@@ -2,7 +2,7 @@ import pytest
 import pandas as pd
 from src.alm import (load_balance_sheet, interest_income, interest_expense,
                      nii, nim, delta_nii, delta_eve, equity, key_rate_exposure, KEYS, 
-                     delta_eve_curve)
+                     delta_eve_curve, tilt)
 
 @pytest.fixture
 def bs():
@@ -75,3 +75,11 @@ def test_delta_eve_curve_parallel_shock(bs):
     parallel = pd.Series(1.0, index=KEYS)
 
     assert delta_eve_curve(bs, parallel) == pytest.approx(-1.2225)
+
+def test_steep_shock(bs):
+    steep = tilt(KEYS, pivot=5, slope=0.1)
+    assert delta_eve_curve(bs, steep) == pytest.approx(-0.2515)
+
+def test_flat_shock(bs):
+    flat = tilt(KEYS, pivot=5, slope=-0.1)
+    assert delta_eve_curve(bs, flat) == pytest.approx(0.2515)
