@@ -40,10 +40,17 @@ Data: the yields above. Everything else is an assumption.
 - Change in EVE: -1.22 ($B), or -15.3% of equity.
 
 ## Validation against RBC (Table 49, Oct 31, 2025)
-- +100 bps: NII +$197M, EVE -$2,648M (-1.9% of equity of $139,151M).
-- -100 bps: NII -$373M, EVE +$1,932M.
-- The signs match in both directions. The size of the EVE move does not: my model's is about 8 times larger as a share of equity.
-- Hypotheses to check in RBC's market risk discussion: RBC hedges its interest rate risk, which keeps its duration gap near 0.1 years against about 1.2 here, and real balance sheets have options and behavioural effects that make results asymmetric. My model is linear, so +100 and -100 come out symmetric.
+                            model  rbc      same sign?
+NII, +100 bps (% of NII)      3.17  0.60        True
+NII, -100 bps (% of NII)     -3.17 -1.13        True
+EVE, +100 bps (% of equity) -15.28 -1.90        True
+EVE, -100 bps (% of equity)  15.28  1.39        True
+
+- The signs match in all four cases.
+- The sizes do not. My EVE moves about 15% of equity against RBC's 1.9% and 1.4%, and my NII moves about 3.2% of NII against RBC's 0.6% and 1.1%.
+- RBC attributes its EVE sensitivity to net growth in fixed-rate assets, including growth in book capital. I could not verify whether hedging explains the rest of the gap.
+- RBC's NII response is asymmetric (+$197M, -$373M), while my linear model is symmetric.
+- NII percentages for RBC use total net interest income of $33,000M (Table 7) and are approximate.
 
 ## Scenarios to run in v2
 Parallel +/-100 and +/-200 bps, a steepener, and a flattener, calibrated to observed moves: the 2022 to 2023 flattening and inversion (703 inverted days since 2015, 248 of them in 2023) and the recovery since.
@@ -55,6 +62,7 @@ Parallel +/-100 and +/-200 bps, a steepener, and a flattener, calibrated to obse
 - Unhedged, with no options.
 - Assumed betas, durations, spreads, and deposit split.
 - The model covers one stylized bank and is not a forecast for RBC.
+- NIM is 2.64% against RBC's reported 1.62%. Interest income is close to RBC's as a share of assets, but my funding cost is about half of RBC's. The model was not recalibrated to close the gap.
 
 ## Out of scope
 Trading book, foreign exchange, credit risk, basis risk, prepayment modelling, and behavioural modelling beyond deposit betas.
