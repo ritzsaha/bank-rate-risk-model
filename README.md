@@ -15,12 +15,14 @@ A bank borrows short and lends long. When rates move, its earnings and the value
 - **Scenarios:** parallel shocks, steepeners and flatteners, and historical windows taken from the yield data.
 - **Tests:** `pytest` suite that reproduces the Excel results.
 - **Validation:** comparison with RBC's disclosed sensitivities.
+- **PCA scenarios (src/rates.py):** level, slope, and curvature shocks derived from daily yield changes, run through the same EVE and NII engine.
 
 ## Key findings
 - **Earnings and value move in opposite directions.** For a +100 bps parallel shock, NII rises by $0.084B and EVE falls by $1.22B (15.3% of equity), per $100B of assets. RBC's disclosure shows the same split.
 - **The deposit beta drives the NII result.** With chequing and savings deposits passing through only 30% of a rate change, NII rises. With a beta of 1 on every deposit, the same shock lowers NII by $0.30B.
 - **The curve's shape matters.** A test steepener (short rates down, long rates up, pivoting at 5 years) lowers EVE by $0.25B and raises NII by $0.02B. A flattener does the reverse. The bank is exposed to steepening because its assets are longer than its funding.
-- **The yield curve was inverted on 703 business days since 2015,** including 248 of about 250 days in 2023. [Add one line on the historical steepening and flattening windows and what they do to the bank, from your scenario table.]
+- **The yield curve was inverted on 703 business days since 2015,** including 248 of about 250 days in 2023. 
+- The first three principal components explain 93.1%, 5.3%, and 0.7% of daily yield-curve variance.
 
 ## Validation against RBC
 Compared with RBC's fiscal 2025 disclosure (Table 49 for sensitivities, Table 7 for net interest income of $33,000M, Table 36 for equity):
@@ -44,6 +46,7 @@ NIM is 2.64% in my model (NII over total assets) against RBC's reported 1.62% on
 - Key-rate exposures come from a single duration per line, not from cash flows.
 - A 2-year yield stands in for the policy rate on floating-rate lines.
 - This is an educational model of a stylized bank, not a forecast or a model of RBC.
+- PCA scenarios reflect 2015 to 2026 data and a square-root-of-time scaling; see docs/model_spec.md.
 
 ## Repository layout
 ```
@@ -68,5 +71,4 @@ Then open the notebooks in order (`01` to `04`) in VS Code or Jupyter.
 Bank of Canada Valet API (benchmark bond yields). RBC 2025 Annual Report, Tables 7, 36, and 49.
 
 ## Next steps
-- Derive level, slope, and curvature shocks from the yield data with PCA
 - Simulate rate paths (Monte Carlo) to get distributions of NII and EVE

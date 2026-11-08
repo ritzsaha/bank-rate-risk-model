@@ -55,6 +55,15 @@ EVE, -100 bps (% of equity)  15.28  1.39        True
 ## Scenarios to run in v2
 Parallel +/-100 and +/-200 bps, a steepener, and a flattener, calibrated to observed moves: the 2022 to 2023 flattening and inversion (703 inverted days since 2015, 248 of them in 2023) and the recovery since.
 
+## PCA scenarios (v2)
+Daily changes in the 2, 3, 5, 7, and 10-year yields (percentage points, 2015-01-01 to 2026-10-29) are decomposed with PCA on the covariance matrix, with no standardization. Components are sign-normalized: level has a positive sum of loadings, slope loads more on the 10-year than the 2-year, and curvature loads positively on the 5-year. A scenario is n standard deviations of one component, scaled to a year by sqrt(250) and passed through the key-rate EVE and NII engine. Variance explained: [x]%, [y]%, [z]%. Tests are in `tests/test_rates.py`.
+
+Added limitations:
+- Components reflect the 2015 to 2026 sample and are not worst-case moves.
+- The sqrt(250) scaling assumes independent daily changes.
+- Five maturities only (2 to 10 years); no overnight rate and no long end.
+- The +/-1 sigma scenarios are symmetric.
+
 ## Limitations
 - Parallel shocks only in v1, since steepeners and flatteners need the full curve.
 - Static balance sheet with no growth or prepayments, and NII measured over 12 months.
